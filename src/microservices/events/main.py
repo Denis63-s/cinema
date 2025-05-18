@@ -9,11 +9,9 @@ KAFKA_BOOTSTRAP_SERVERS = os.getenv("KAFKA_BROKERS", "kafka:9092")
 TOPICS = ["user-events", "payment-events", "movie-events"]
 
 app = FastAPI()
-
-producer: AIOKafkaProducer = None  # глобальная переменная
+producer: AIOKafkaProducer = None
 
 class Event(BaseModel):
-    type: str
     payload: dict
 
 @app.on_event("startup")
@@ -26,6 +24,10 @@ async def startup_event():
 @app.on_event("shutdown")
 async def shutdown_event():
     await producer.stop()
+
+@app.get("/api/events/health")
+async def health_check():
+    return {"status": True}
 
 @app.post("/api/events/{event_type}")
 async def send_event(event_type: str, event: Event):
@@ -43,7 +45,6 @@ async def consume_messages():
         bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS,
         group_id="events-service"
     )
-
     for i in range(5):
         try:
             await consumer.start()

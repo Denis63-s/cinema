@@ -11,6 +11,10 @@ MOVIES_SERVICE_URL = os.getenv("MOVIES_SERVICE_URL", "http://movies-service:8081
 GRADUAL_MIGRATION = os.getenv("GRADUAL_MIGRATION", "false").lower() == "true"
 MIGRATION_PERCENT = int(os.getenv("MOVIES_MIGRATION_PERCENT", "0"))
 
+@app.get("/health")
+async def health_check():
+    return {"status": True}
+
 @app.get("/api/movies")
 async def proxy_movies(request: Request):
     # логика фиче-флага
@@ -31,4 +35,22 @@ async def proxy_movies(request: Request):
             return JSONResponse(
                 status_code=502,
                 content={"error": f"Ошибка при обращении к целевому сервису: {str(e)}"}
+            )
+
+@app.get("/api/users")
+async def proxy_users(request: Request):
+    target_url = f"{MONOLITH_URL}/api/users"
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(target_url)
+            return Response(
+                content=response.content,
+                status_code=response.status_code,
+                media_type=response.headers.get("Content-Type")
+            )
+        except httpx.RequestError as e:
+            return JSONResponse(
+                status_code=502,
+                content={"error": f"Ошибка при обращении к монолиту: {str(e)}"}
             )
