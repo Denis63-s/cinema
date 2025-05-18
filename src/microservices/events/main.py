@@ -5,7 +5,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from aiokafka import AIOKafkaProducer, AIOKafkaConsumer, errors
 from pydantic import BaseModel
-from typing import Dict, Any
+from typing import Optional, Dict, Any
 
 KAFKA_BOOTSTRAP_SERVERS = os.getenv("KAFKA_BROKERS", "kafka:9092")
 TOPICS = ["user-events", "payment-events", "movie-events"]
@@ -13,8 +13,9 @@ TOPICS = ["user-events", "payment-events", "movie-events"]
 app = FastAPI()
 producer: AIOKafkaProducer = None
 
-class GenericPayload(BaseModel):
-    __root__: Dict[str, Any]
+class Event(BaseModel):
+    type: Optional[str] = None
+    payload: Optional[Dict[str, Any]] = None
 
 @app.on_event("startup")
 async def startup_event():
@@ -27,17 +28,21 @@ async def startup_event():
 async def shutdown_event():
     await producer.stop()
 
-@app.get("/api/events/health")
-async def health_check():
-    return {"status": True}
-
 @app.post("/api/events/{event_type}", status_code=201)
-async def send_event(event_type: str, payload: GenericPayload):
+async def send_event(event_type: str, request: Request):
     if event_type not in ["user", "payment", "movie"]:
         return JSONResponse(status_code=400, content={"error": "Invalid event type"})
 
+    body = await request.json()
+
+    # если это user-event — берём payload из вложенного поля
+    if event_type == "user" and "payload" in body:
+        message = body["payload"]
+    else:
+        message = body
+
     topic = f"{event_type}-events"
-    msg = json.dumps(payload.__root__).encode("utf-8")
+    msg = json.dumps(message).encode("utf-8")
     await producer.send_and_wait(topic, msg)
     return {"status": "success", "topic": topic}
 
