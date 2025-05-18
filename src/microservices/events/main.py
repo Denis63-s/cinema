@@ -1,7 +1,8 @@
 import os
 import asyncio
 import json
-from fastapi import FastAPI, status
+from typing import Optional
+from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from aiokafka import AIOKafkaProducer, AIOKafkaConsumer, errors
@@ -11,15 +12,28 @@ TOPICS = ["user-events", "payment-events", "movie-events"]
 
 app = FastAPI()
 
-producer: AIOKafkaProducer = None
+producer: AIOKafkaProducer = None  # глобальная переменная
 
 class EventPayload(BaseModel):
-    movie_id: int | None = None
-    title: str | None = None
-    action: str
-    user_id: int | None = None
-    payment_id: int | None = None
-    amount: float | None = None
+    # Movie event
+    movie_id: Optional[int] = None
+    title: Optional[str] = None
+    action: Optional[str] = None
+    user_id: Optional[int] = None
+
+    # User event
+    username: Optional[str] = None
+    timestamp: Optional[str] = None
+
+    # Payment event
+    payment_id: Optional[int] = None
+    amount: Optional[float] = None
+    status: Optional[str] = None
+    method_type: Optional[str] = None
+
+class Event(BaseModel):
+    type: str
+    payload: EventPayload
 
 @app.on_event("startup")
 async def startup_event():
@@ -32,17 +46,13 @@ async def startup_event():
 async def shutdown_event():
     await producer.stop()
 
-@app.get("/api/events/health")
-async def health_check():
-    return {"status": True}
-
-@app.post("/api/events/{event_type}", status_code=status.HTTP_201_CREATED)
-async def send_event(event_type: str, event: EventPayload):
+@app.post("/api/events/{event_type}", status_code=201)
+async def send_event(event_type: str, event: Event):
     if event_type not in ["user", "payment", "movie"]:
         return JSONResponse(status_code=400, content={"error": "Invalid event type"})
 
     topic = f"{event_type}-events"
-    msg = json.dumps(event.dict()).encode("utf-8")
+    msg = json.dumps(event.payload.dict()).encode("utf-8")
     await producer.send_and_wait(topic, msg)
     return {"status": "success", "topic": topic}
 
