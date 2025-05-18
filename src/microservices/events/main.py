@@ -69,3 +69,7 @@ async def consume_messages():
             print(f"[Kafka] Consumed from {msg.topic}: {msg.value.decode()}")
     finally:
         await consumer.stop()
+# Health check endpoint — ДОБАВЬ В САМЫЙ КОНЕЦ:
+@app.get("/api/events/health")
+async def health_check():
+    return {"status": True}
