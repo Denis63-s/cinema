@@ -25,7 +25,7 @@ async def shutdown_event():
 async def health_check():
     return {"status": True}
 
-@app.post("/api/events/{event_type}")
+@app.post("/api/events/{event_type}", status_code=status.HTTP_201_CREATED)
 async def send_event(event_type: str, request: Request):
     if event_type not in ["user", "payment", "movie"]:
         return {"error": "Invalid event type"}
