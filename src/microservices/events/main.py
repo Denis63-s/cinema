@@ -1,8 +1,7 @@
 import os
 import asyncio
 import json
-from fastapi import FastAPI
-from pydantic import BaseModel
+from fastapi import FastAPI, Request
 from aiokafka import AIOKafkaProducer, AIOKafkaConsumer, errors
 
 KAFKA_BOOTSTRAP_SERVERS = os.getenv("KAFKA_BROKERS", "kafka:9092")
@@ -10,9 +9,6 @@ TOPICS = ["user-events", "payment-events", "movie-events"]
 
 app = FastAPI()
 producer: AIOKafkaProducer = None
-
-class Event(BaseModel):
-    payload: dict
 
 @app.on_event("startup")
 async def startup_event():
@@ -30,15 +26,20 @@ async def health_check():
     return {"status": True}
 
 @app.post("/api/events/{event_type}")
-async def send_event(event_type: str, event: Event):
+async def send_event(event_type: str, request: Request):
     if event_type not in ["user", "payment", "movie"]:
         return {"error": "Invalid event type"}
-    
-    topic = f"{event_type}-events"
-    msg = json.dumps(event.payload).encode("utf-8")
-    await producer.send_and_wait(topic, msg)
-    return {"status": "success", "topic": topic}
 
+    try:
+        body = await request.json()
+    except Exception:
+        return {"error": "Invalid JSON body"}, 400
+
+    topic = f"{event_type}-events"
+    await producer.send_and_wait(topic, json.dumps(body).encode("utf-8"))
+
+    return {"status": "success", "topic": topic}
+    
 async def consume_messages():
     consumer = AIOKafkaConsumer(
         *TOPICS,
