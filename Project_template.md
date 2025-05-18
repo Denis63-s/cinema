@@ -227,7 +227,10 @@ cat .docker/config.json | base64
 
   Будет наподобие такого
 
+<<<<<<< HEAD
 ```bash
+=======
+>>>>>>> 02b0f1a4652b4bda775fe32cc8275b58b4408d48
   NAME                              READY   STATUS    
 
   events-service-7587c6dfd5-6whzx   1/1     Running  
@@ -243,7 +246,10 @@ cat .docker/config.json | base64
   proxy-service-577d6c549b-6qfcv    1/1     Running  
 
   zookeeper-0                       1/1     Running 
+<<<<<<< HEAD
 ```
+=======
+>>>>>>> 02b0f1a4652b4bda775fe32cc8275b58b4408d48
 
   8. Добавим ingress
 
@@ -347,7 +353,11 @@ minikube tunnel
 ```
 
 Потом вызовите 
+<<<<<<< HEAD
 https://cinemaabyss.example.com/api/movies и приложите скриншот
+=======
+https://cinemaabyss.example.com/api/movies
+>>>>>>> 02b0f1a4652b4bda775fe32cc8275b58b4408d48
 
 
 ## Удаляем все
@@ -357,4 +367,8 @@ https://cinemaabyss.example.com/api/movies и приложите скриншо�
 ```bash
 kubectl delete all --all -n cinemaabyss
 kubectl delete namespace cinemaabyss
+<<<<<<< HEAD
 ```
+=======
+```
+>>>>>>> 02b0f1a4652b4bda775fe32cc8275b58b4408d48
