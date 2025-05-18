@@ -18,9 +18,12 @@ jobs:
 
     env:
       REGISTRY: ghcr.io
-      IMAGE_NAME_PROXY: ${{ github.repository }}/proxy-service
-      IMAGE_NAME_EVENTS: ${{ github.repository }}/events-service
-
+      REPO: ${{ github.repository }}
+      REPO_LC: ${{ github.repository | toLower }}
+      MONOLITH_IMAGE_NAME: ${{ github.repository }}/monolith
+      MOVIES_SERVICE_IMAGE_NAME: ${{ github.repository }}/movies-service
+      EVENTS_SERVICE_IMAGE_NAME: ${{ github.repository }}/events-service
+      PROXY_SERVICE_IMAGE_NAME: ${{ github.repository }}/proxy-service
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
