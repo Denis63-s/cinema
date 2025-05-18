@@ -19,11 +19,11 @@ jobs:
     env:
       REGISTRY: ghcr.io
       REPO: ${{ github.repository }}
-      REPO_LC: ${{ github.repository | toLower }}
-      MONOLITH_IMAGE_NAME: ${{ github.repository }}/monolith
-      MOVIES_SERVICE_IMAGE_NAME: ${{ github.repository }}/movies-service
-      EVENTS_SERVICE_IMAGE_NAME: ${{ github.repository }}/events-service
-      PROXY_SERVICE_IMAGE_NAME: ${{ github.repository }}/proxy-service
+      MONOLITH_IMAGE_NAME: ghcr.io/${{ github.repository }}/monolith
+      MOVIES_SERVICE_IMAGE_NAME: ghcr.io/${{ github.repository }}/movies-service
+      EVENTS_SERVICE_IMAGE_NAME: ghcr.io/${{ github.repository }}/events-service
+      PROXY_SERVICE_IMAGE_NAME: ghcr.io/${{ github.repository }}/proxy-service
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -43,14 +43,14 @@ jobs:
         with:
           context: ./src/microservices/proxy
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_PROXY }}:latest
+          tags: ${{ env.PROXY_SERVICE_IMAGE_NAME }}:latest
 
       - name: Build and push events-service
         uses: docker/build-push-action@v5
         with:
           context: ./src/microservices/events
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_EVENTS }}:latest
+          tags: ${{ env.EVENTS_SERVICE_IMAGE_NAME }}:latest
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
