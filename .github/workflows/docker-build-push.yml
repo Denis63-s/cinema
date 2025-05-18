@@ -19,10 +19,11 @@ jobs:
     env:
       REGISTRY: ghcr.io
       REPO: ${{ github.repository }}
-      MONOLITH_IMAGE_NAME: ghcr.io/${{ github.repository }}/monolith
-      MOVIES_SERVICE_IMAGE_NAME: ghcr.io/${{ github.repository }}/movies-service
-      EVENTS_SERVICE_IMAGE_NAME: ghcr.io/${{ github.repository }}/events-service
-      PROXY_SERVICE_IMAGE_NAME: ghcr.io/${{ github.repository }}/proxy-service
+      REPO_LC: ${{ github.repository.lower }}
+      MONOLITH_IMAGE_NAME: ghcr.io/${{ github.repository.lower }}/monolith
+      MOVIES_SERVICE_IMAGE_NAME: ghcr.io/${{ github.repository.lower }}/movies-service
+      EVENTS_SERVICE_IMAGE_NAME: ghcr.io/${{ github.repository.lower }}/events-service
+      PROXY_SERVICE_IMAGE_NAME: ghcr.io/${{ github.repository.lower }}/proxy-service
 
     steps:
       - name: Checkout repository
