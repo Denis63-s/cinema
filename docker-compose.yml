@@ -1,10 +1,6 @@
 version: '3.8'
 
 services:
-<<<<<<< HEAD
-=======
-  # PostgreSQL Database
->>>>>>> 02b0f1a4652b4bda775fe32cc8275b58b4408d48
   postgres:
     image: postgres:14
     container_name: cinemaabyss-postgres
@@ -25,10 +21,6 @@ services:
     networks:
       - cinemaabyss-network
 
-<<<<<<< HEAD
-=======
-  # ZooKeeper for Kafka
->>>>>>> 02b0f1a4652b4bda775fe32cc8275b58b4408d48
   zookeeper:
     image: wurstmeister/zookeeper:latest
     container_name: cinemaabyss-zookeeper
@@ -37,10 +29,6 @@ services:
     networks:
       - cinemaabyss-network
 
-<<<<<<< HEAD
-=======
-  # Kafka
->>>>>>> 02b0f1a4652b4bda775fe32cc8275b58b4408d48
   kafka:
     image: wurstmeister/kafka:2.13-2.7.0
     container_name: cinemaabyss-kafka
@@ -59,22 +47,13 @@ services:
     networks:
       - cinemaabyss-network
 
-<<<<<<< HEAD
-=======
-  # Monolith Service
->>>>>>> 02b0f1a4652b4bda775fe32cc8275b58b4408d48
   monolith:
     build:
       context: ./src/monolith
       dockerfile: Dockerfile
     container_name: cinemaabyss-monolith
     depends_on:
-<<<<<<< HEAD
-      postgres:
-        condition: service_healthy
-=======
       - postgres
->>>>>>> 02b0f1a4652b4bda775fe32cc8275b58b4408d48
     ports:
       - "8080:8080"
     environment:
@@ -83,22 +62,13 @@ services:
     networks:
       - cinemaabyss-network
 
-<<<<<<< HEAD
-=======
-  # Movies Microservice
->>>>>>> 02b0f1a4652b4bda775fe32cc8275b58b4408d48
   movies-service:
     build:
       context: ./src/microservices/movies
       dockerfile: Dockerfile
     container_name: cinemaabyss-movies-service
     depends_on:
-<<<<<<< HEAD
-      postgres:
-        condition: service_healthy
-=======
       - postgres
->>>>>>> 02b0f1a4652b4bda775fe32cc8275b58b4408d48
     ports:
       - "8081:8081"
     environment:
@@ -107,39 +77,22 @@ services:
     networks:
       - cinemaabyss-network
 
-<<<<<<< HEAD
-=======
-  # Events Microservice
->>>>>>> 02b0f1a4652b4bda775fe32cc8275b58b4408d48
   events-service:
     build:
       context: ./src/microservices/events
       dockerfile: Dockerfile
     container_name: cinemaabyss-events-service
     depends_on:
-<<<<<<< HEAD
-      kafka:
-        condition: service_started
-      postgres:
-        condition: service_healthy
-=======
-      - postgres
       - kafka
->>>>>>> 02b0f1a4652b4bda775fe32cc8275b58b4408d48
+      - postgres
     ports:
       - "8082:8082"
     environment:
       PORT: 8082
       KAFKA_BROKERS: kafka:9092
     networks:
-<<<<<<< HEAD
-      - cinemaabyss-network   
-
-=======
       - cinemaabyss-network
 
-  # Proxy Service (API Gateway)
->>>>>>> 02b0f1a4652b4bda775fe32cc8275b58b4408d48
   proxy-service:
     build:
       context: ./src/microservices/proxy
@@ -153,24 +106,14 @@ services:
       - "8000:8000"
     environment:
       PORT: 8000
-<<<<<<< HEAD
-      MONOLITH_URL: http://cinemaabyss-monolith:8080
-      MOVIES_SERVICE_URL: http://cinemaabyss-movies-service:8081
-      EVENTS_SERVICE_URL: http://cinemaabyss-events-service:8082
-=======
       MONOLITH_URL: http://monolith:8080
       MOVIES_SERVICE_URL: http://movies-service:8081
       EVENTS_SERVICE_URL: http://events-service:8082
->>>>>>> 02b0f1a4652b4bda775fe32cc8275b58b4408d48
       GRADUAL_MIGRATION: "true"
       MOVIES_MIGRATION_PERCENT: "50"
     networks:
       - cinemaabyss-network
 
-<<<<<<< HEAD
-=======
-  # Kafka UI for monitoring Kafka
->>>>>>> 02b0f1a4652b4bda775fe32cc8275b58b4408d48
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     container_name: cinemaabyss-kafka-ui
@@ -182,14 +125,6 @@ services:
       KAFKA_CLUSTERS_0_NAME: cinemaabyss
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
       KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
-<<<<<<< HEAD
-    healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost 9092 || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-=======
->>>>>>> 02b0f1a4652b4bda775fe32cc8275b58b4408d48
     networks:
       - cinemaabyss-network
 
@@ -199,8 +134,4 @@ volumes:
 networks:
   cinemaabyss-network:
     name: cinemaabyss-network
-<<<<<<< HEAD
     driver: bridge
-=======
-    driver: bridge
->>>>>>> 02b0f1a4652b4bda775fe32cc8275b58b4408d48
