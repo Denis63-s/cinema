@@ -9,10 +9,11 @@ KAFKA_BOOTSTRAP_SERVERS = os.getenv("KAFKA_BROKERS", "kafka:9092")
 TOPICS = ["user-events", "payment-events", "movie-events"]
 
 app = FastAPI()
-producer: AIOKafkaProducer = None
+
+producer: AIOKafkaProducer = None  # глобальная переменная
 
 class Event(BaseModel):
-    payload: dict
+    payload: dict  # убрали "type", так как он уже есть в URL
 
 @app.on_event("startup")
 async def startup_event():
@@ -25,10 +26,6 @@ async def startup_event():
 async def shutdown_event():
     await producer.stop()
 
-@app.get("/api/events/health")
-async def health_check():
-    return {"status": True}
-
 @app.post("/api/events/{event_type}")
 async def send_event(event_type: str, event: Event):
     if event_type not in ["user", "payment", "movie"]:
@@ -37,7 +34,7 @@ async def send_event(event_type: str, event: Event):
     topic = f"{event_type}-events"
     msg = json.dumps(event.payload).encode("utf-8")
     await producer.send_and_wait(topic, msg)
-    return {"status": "sent", "topic": topic}
+    return {"status": "success", "topic": topic}  # именно "success", как ожидает тест
 
 async def consume_messages():
     consumer = AIOKafkaConsumer(
@@ -45,6 +42,7 @@ async def consume_messages():
         bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS,
         group_id="events-service"
     )
+
     for i in range(5):
         try:
             await consumer.start()
