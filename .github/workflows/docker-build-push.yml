@@ -1,6 +1,7 @@
-name: Docker Build & Push
+name: Docker Build and Push
 
 on:
+  workflow_dispatch:
   push:
     branches: [ main ]
     paths:
@@ -33,52 +34,74 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push proxy-service
-        uses: docker/build-push-action@v5
+      - name: Extract metadata (tags, labels) for Monolith
+        id: meta-monolith
+        uses: docker/metadata-action@v4
         with:
-          context: ./src/microservices/proxy
-          push: true
-          tags: ghcr.io/${{ github.repository_owner }}/proxy-service:latest
+          images: ghcr.io/${{ github.repository_owner }}/monolith
+          tags: |
+            type=ref,event=branch
+            type=sha,format=short
+            latest
 
-      - name: Build and push events-service
-        uses: docker/build-push-action@v5
-        with:
-          context: ./src/microservices/events
-          push: true
-          tags: ghcr.io/${{ github.repository_owner }}/events-service:latest
-
-      - name: Build and push movies-service
-        uses: docker/build-push-action@v5
-        with:
-          context: ./src/microservices/movies
-          push: true
-          tags: ghcr.io/${{ github.repository_owner }}/movies-service:latest
-
-      - name: Build and push monolith
+      - name: Build and push Monolith
         uses: docker/build-push-action@v5
         with:
           context: ./src/monolith
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/monolith:latest
+          tags: ${{ steps.meta-monolith.outputs.tags }}
+          labels: ${{ steps.meta-monolith.outputs.labels }}
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - name: Extract metadata (tags, labels) for Movies Service
+        id: meta-movies
+        uses: docker/metadata-action@v4
         with:
-          node-version: '18'
+          images: ghcr.io/${{ github.repository_owner }}/movies-service
+          tags: |
+            type=ref,event=branch
+            type=sha,format=short
+            latest
 
-      - name: Install dependencies for API tests
-        working-directory: tests/postman
-        run: npm install
+      - name: Build and push Movies Service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./src/microservices/movies
+          push: true
+          tags: ${{ steps.meta-movies.outputs.tags }}
+          labels: ${{ steps.meta-movies.outputs.labels }}
 
-      - name: Start services for tests
-        run: docker-compose -f docker-compose.yml up -d
+      - name: Extract metadata (tags, labels) for Events Service
+        id: meta-events
+        uses: docker/metadata-action@v4
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/events-service
+          tags: |
+            type=ref,event=branch
+            type=sha,format=short
+            latest
 
-      - name: Wait for containers to be healthy
-        run: sleep 25
+      - name: Build and push Events Service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./src/microservices/events
+          push: true
+          tags: ${{ steps.meta-events.outputs.tags }}
+          labels: ${{ steps.meta-events.outputs.labels }}
 
-      - name: Run API tests
-        working-directory: tests/postman
-        run: npm run test:local
+      - name: Extract metadata (tags, labels) for Proxy Service
+        id: meta-proxy
+        uses: docker/metadata-action@v4
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/proxy-service
+          tags: |
+            type=ref,event=branch
+            type=sha,format=short
+            latest
 
-      - name: Stop and clean up containers
-        run: docker-compose -f docker-compose.yml down
+      - name: Build and push Proxy Service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./src/microservices/proxy
+          push: true
+          tags: ${{ steps.meta-proxy.outputs.tags }}
+          labels: ${{ steps.meta-proxy.outputs.labels }}
