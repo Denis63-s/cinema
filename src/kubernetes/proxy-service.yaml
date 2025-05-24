@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: proxy-service
-          image: ghcr.io/db-exp/cinemaabysstest/proxy-service:latest
+          image: ghcr.io/denis63-s/cinema/proxy-service:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8000

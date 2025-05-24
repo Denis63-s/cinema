@@ -9,6 +9,8 @@ data:
   DB_PORT: "5432"
   DB_NAME: "cinemaabyss"
   DB_USER: "postgres"
+  KAFKA_BROKERS: "kafka:9092"
+
 
   # Service URLs
   MONOLITH_URL: "http://monolith:8080"
